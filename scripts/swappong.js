@@ -327,20 +327,20 @@ async function approveToken(web3, privateKey, tokenAddress, spenderAddress, owne
         const tokenBalance = BigInt(await tokenContract.methods.balanceOf(ownerAddress).call());
 
         safeLog(log, `{cyan-fg}ℹ Wallet ${walletIndex} │ Current Allowance: ${currentAllowance.toString()} (wei) for spender ${spenderAddress}{/cyan-fg}`);
-        safeLog(log, `{cyan-fg}ℹ Wallet ${walletIndex} │ Token Balance ($PONG): ${web3.utils.fromWei(tokenBalance.toString(), 'ether')} $PONG{/cyan-fg}`);
-        safeLog(log, `{cyan-fg}ℹ Wallet ${walletIndex} │ Amount to Approve: ${amountToApprove} $PONG (${amountWeiToApprove.toString()} wei){/cyan-fg}`);
+        safeLog(log, `{cyan-fg}ℹ Wallet ${walletIndex} │ Token Balance ($PING): ${web3.utils.fromWei(tokenBalance.toString(), 'ether')} $PING{/cyan-fg}`); // Changed to PING for this script
+        safeLog(log, `{cyan-fg}ℹ Wallet ${walletIndex} │ Amount to Approve: ${amountToApprove} $PING (${amountWeiToApprove.toString()} wei){/cyan-fg}`); // Changed to PING for this script
 
 
         if (tokenBalance < amountWeiToApprove) {
-            safeLog(log, `{red-fg}✖ Error: Wallet ${walletIndex} │ Insufficient $PONG balance to approve. Has ${web3.utils.fromWei(tokenBalance.toString(), 'ether')} $PONG, needs ${amountToApprove} $PONG.{/red-fg}`);
-            safeUpdatePanel(panelUpdate, `{red-fg}✖ Wallet ${walletIndex}: Insufficient $PONG balance for approval.{/red-fg}`);
+            safeLog(log, `{red-fg}✖ Error: Wallet ${walletIndex} │ Insufficient $PING balance to approve. Has ${web3.utils.fromWei(tokenBalance.toString(), 'ether')} $PING, needs ${amountToApprove} $PING.{/red-fg}`); // Changed to PING
+            safeUpdatePanel(panelUpdate, `{red-fg}✖ Wallet ${walletIndex}: Insufficient $PING balance for approval.{/red-fg}`); // Changed to PING
             txStats.failed++;
             return null;
         }
 
         if (currentAllowance >= amountWeiToApprove) { // Check if allowance is already sufficient for the requested amount
-            safeLog(log, `{green-fg}✔ Info: Wallet ${walletIndex} │ Allowance already sufficient for ${amountToApprove} $PONG. Skipping approval.{/green-fg}`);
-            safeUpdatePanel(panelUpdate, `{green-fg}✔ Wallet ${walletIndex}: Allowance sufficient for ${amountToApprove} $PONG.{/green-fg}`);
+            safeLog(log, `{green-fg}✔ Info: Wallet ${walletIndex} │ Allowance already sufficient for ${amountToApprove} $PING. Skipping approval.{/green-fg}`); // Changed to PING
+            safeUpdatePanel(panelUpdate, `{green-fg}✔ Wallet ${walletIndex}: Allowance sufficient for ${amountToApprove} $PING.{/green-fg}`); // Changed to PING
             return "ALREADY_APPROVED"; // Indicate that no new transaction was sent
         }
 
@@ -403,15 +403,15 @@ async function swapToken(web3, privateKey, tokenIn, tokenOut, amountIn, recipien
         const tokenInBalance = BigInt(await tokenInContract.methods.balanceOf(account.address).call());
         const tokenOutBalance = BigInt(await tokenOutContract.methods.balanceOf(account.address).call());
 
-        safeLog(log, `{cyan-fg}ℹ Wallet ${walletIndex} │ Pre-Swap $PONG Balance: ${web3.utils.fromWei(tokenInBalance.toString(), 'ether')} $PONG{/cyan-fg}`);
-        safeLog(log, `{cyan-fg}ℹ Wallet ${walletIndex} │ Pre-Swap $PING Balance: ${web3.utils.fromWei(tokenOutBalance.toString(), 'ether')} $PING{/cyan-fg}`);
-        safeLog(log, `{cyan-fg}ℹ Wallet ${walletIndex} │ Amount to Swap (in $PONG): ${amountIn} (${amountInWei.toString()} wei){/cyan-fg}`);
-        safeLog(log, `{cyan-fg}ℹ Wallet ${walletIndex} │ Minimum Amount Out (in $PING): ${web3.utils.fromWei(amountOutMinimum.toString(), 'ether')} $PING (${amountOutMinimum.toString()} wei) (Slippage: ${(1 - slippageTolerance) * 100}%){/cyan-fg}`);
+        safeLog(log, `{cyan-fg}ℹ Wallet ${walletIndex} │ Pre-Swap $PING Balance: ${web3.utils.fromWei(tokenInBalance.toString(), 'ether')} $PING{/cyan-fg}`); // Changed to PING
+        safeLog(log, `{cyan-fg}ℹ Wallet ${walletIndex} │ Pre-Swap $PONG Balance: ${web3.utils.fromWei(tokenOutBalance.toString(), 'ether')} $PONG{/cyan-fg}`); // Changed to PONG
+        safeLog(log, `{cyan-fg}ℹ Wallet ${walletIndex} │ Amount to Swap (in $PING): ${amountIn} (${amountInWei.toString()} wei){/cyan-fg}`); // Changed to PING
+        safeLog(log, `{cyan-fg}ℹ Wallet ${walletIndex} │ Minimum Amount Out (in $PONG): ${web3.utils.fromWei(amountOutMinimum.toString(), 'ether')} $PONG (${amountOutMinimum.toString()} wei) (Slippage: ${(1 - slippageTolerance) * 100}%){/cyan-fg}`); // Changed to PONG
 
 
         if (tokenInBalance < amountInWei) {
-            safeLog(log, `{red-fg}✖ Error: Wallet ${walletIndex} │ Insufficient $PONG balance for swap. Has ${web3.utils.fromWei(tokenInBalance.toString(), 'ether')} $PONG, needs ${amountIn} $PONG.{/red-fg}`);
-            safeUpdatePanel(panelUpdate, `{red-fg}✖ Wallet ${walletIndex}: Insufficient $PONG for swap.{/red-fg}`);
+            safeLog(log, `{red-fg}✖ Error: Wallet ${walletIndex} │ Insufficient $PING balance for swap. Has ${web3.utils.fromWei(tokenInBalance.toString(), 'ether')} $PING, needs ${amountIn} $PING.{/red-fg}`); // Changed to PING
+            safeUpdatePanel(panelUpdate, `{red-fg}✖ Wallet ${walletIndex}: Insufficient $PING for swap.{/red-fg}`); // Changed to PING
             txStats.failed++;
             return null;
         }
@@ -463,8 +463,8 @@ module.exports = async function runSwapping(addLog, updatePanel, closeUI, reques
     const panelUpdate = typeof updatePanel === 'function' ? updatePanel : (msg) => console.log(msg.replace(/\{.*?}/g, ''));
 
     try {
-        panelUpdate('{cyan-fg}\n START SWAPPING $PONG -> $PING \n{/cyan-fg}');
-        log('{cyan-fg}--- Start Swapping $PONG -> $PING ---{/cyan-fg}');
+        panelUpdate('{cyan-fg}\n START SWAPPING $PING -> $PONG \n{/cyan-fg}'); // Changed title
+        log('{cyan-fg}--- Start Swapping $PING -> $PONG ---{/cyan-fg}'); // Changed title
 
         let privateKeys = loadPrivateKeys(log); // Pass 'log' to loadPrivateKeys
         if (SHUFFLE_WALLETS) privateKeys = shuffleWallets(privateKeys);
@@ -478,9 +478,9 @@ module.exports = async function runSwapping(addLog, updatePanel, closeUI, reques
             return;
         }
 
-        const amount = await requestInput('Amount of $PONG to swap (e.g., 100)', 'number', 100);
-        panelUpdate(`{cyan-fg}\n Amount to swap: ${amount} $PONG \n{/cyan-fg}`);
-        log(`{cyan-fg}Amount to swap: ${amount} $PONG{/cyan-fg}`);
+        const amount = await requestInput('Amount of $PING to swap (e.g., 100)', 'number', 100); // Changed prompt
+        panelUpdate(`{cyan-fg}\n Amount to swap: ${amount} $PING \n{/cyan-fg}`); // Changed token
+        log(`{cyan-fg}Amount to swap: ${amount} $PING{/cyan-fg}`); // Changed token
 
         const swapTimes = await requestInput('Number of swaps per wallet (default 1)', 'number', 1);
         panelUpdate(`{cyan-fg}\n Swaps per wallet: ${swapTimes} \n{/cyan-fg}`);
@@ -502,12 +502,13 @@ module.exports = async function runSwapping(addLog, updatePanel, closeUI, reques
             log(`{cyan-fg}--- Processing Wallet ${i + 1}/${privateKeys.length} ---{/cyan-fg}`);
 
             const privateKey = privateKeys[i];
-            const tokenIn = '0x33E7fAB0a8a5da1A923180989bD617c9c2D1C493'; // $PING
-            const tokenOut = '0x9beaA0016c22B646Ac311Ab171270B0ECf23098F'; // $PONG
+            const tokenIn = '0x33E7fAB0a8a5da1A923180989bD617c9c2D1C493'; // $PING (Changed)
+            const tokenOut = '0x9beaA0016c22B646Ac311Ab171270B0ECf23098F'; // $PONG (Changed)
             const spenderAddress = '0x6aac14f090a35eea150705f72d90e4cdc4a49b2c'; // Uniswap V3 Router
             const ownerAddress = web3.eth.accounts.privateKeyToAccount(privateKey).address; // Get owner address
 
             // Approve the router to spend tokens (now approves 'amount' from user input)
+            // Note: The approveToken function's logging refers to $PONG, but it will be approving $PING in this script.
             const approveTx = await approveToken(web3, privateKey, tokenIn, spenderAddress, ownerAddress, amount * swapTimes, i + 1, log, panelUpdate, txStats); // Approve total amount for all swaps
             if (!approveTx || approveTx === "ALREADY_APPROVED") { // Check for "ALREADY_APPROVED" status
                 if (approveTx === null) { // Only skip if there was an actual approval failure
