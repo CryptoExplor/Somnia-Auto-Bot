@@ -2,17 +2,29 @@ const Web3 = require('web3');
 const fs = require('fs');
 
 // Config
-const SOMNIA_TESTNET_RPC_URL = 'https://dream-rpc.somnia.network';
+const SOMNIA_TESTNET_RPC_URL = 'https://rpc.ankr.com/somnia_testnet';
 const SOMNIA_TESTNET_EXPLORER_URL = 'https://shannon-explorer.somnia.network';
 const SHUFFLE_WALLETS = true;
 const MINT_PONGPING_SLEEP_RANGE = [100, 300]; // seconds
 
+/**
+ * Checks if a given string is a valid Ethereum private key.
+ * @param {string} key - The private key to validate.
+ * @returns {boolean} - True if the key is valid, false otherwise.
+ */
 function isValidPrivateKey(key) {
     key = key.trim();
     if (!key.startsWith('0x')) key = '0x' + key;
     return /^0x[a-fA-F0-9]{64}$/.test(key);
 }
 
+/**
+ * Loads private keys from a specified file.
+ * @param {string} filePath - The path to the file containing private keys.
+ * @param {function} addLog - Callback function to add log messages.
+ * @returns {string[]} - An array of valid private keys.
+ * @throws {Error} If the file is not found or no valid private keys are found.
+ */
 function loadPrivateKeys(filePath = 'pvkey.txt', addLog) {
     if (!fs.existsSync(filePath)) {
         addLog(`✖ Error: pvkey.txt file not found`);
@@ -39,16 +51,34 @@ function loadPrivateKeys(filePath = 'pvkey.txt', addLog) {
     return validKeys;
 }
 
+/**
+ * Shuffles an array of private keys randomly.
+ * @param {string[]} keys - The array of private keys to shuffle.
+ * @returns {string[]} - The shuffled array of private keys.
+ */
 function shuffleWallets(keys) {
     return keys.map(value => ({ value, sort: Math.random() }))
         .sort((a, b) => a.sort - b.sort)
         .map(({ value }) => value);
 }
 
+/**
+ * Generates a random integer within a specified range (inclusive).
+ * @param {number} min - The minimum value.
+ * @param {number} max - The maximum value.
+ * @returns {number} - A random integer.
+ */
 function getRandomInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
+/**
+ * Connects to the Web3 provider and checks the connection.
+ * @param {function} addLog - Callback function to add log messages.
+ * @param {function} updatePanel - Callback function to update the UI panel.
+ * @returns {Web3} - The Web3 instance.
+ * @throws {Error} If the connection fails.
+ */
 async function connectWeb3(addLog, updatePanel) {
     try {
         const web3 = new Web3(SOMNIA_TESTNET_RPC_URL);
@@ -69,17 +99,34 @@ async function connectWeb3(addLog, updatePanel) {
     }
 }
 
-// Bytecode for minting (same as bytecodeMintPongPing)
+/**
+ * Generates the bytecode for minting PongPing tokens.
+ * Updated to use the correct function selector.
+ * @param {string} address - The recipient address for the mint.
+ * @returns {string} - The bytecode string.
+ */
 function bytecodeMintPongPing(address) {
     const addressClean = address.replace("0x", "").toLowerCase();
-    return `0x40c10f19000000000000000000000000${addressClean}00000000000000000000000000000000000000000000003635c9adc5dea00000`;
+    // Changed function selector from 0x40c10f19 to 0x1249c58b based on user input
+    return `0x1249c58b000000000000000000000000${addressClean}00000000000000000000000000000000000000000000003635c9adc5dea00000`;
 }
 
+/**
+ * Mints PongPing tokens for a given private key.
+ * Gas estimation has been removed, using a fixed gas limit.
+ * @param {Web3} web3 - The Web3 instance.
+ * @param {string} privateKey - The private key of the wallet to mint from.
+ * @param {number} walletIndex - The index of the current wallet being processed.
+ * @param {function} addLog - Callback function to add log messages.
+ * @param {function} updatePanel - Callback function to update the UI panel.
+ * @returns {Promise<boolean>} - True if minting was successful, false otherwise.
+ */
 async function mintPongPing(web3, privateKey, walletIndex, addLog, updatePanel) {
     try {
         const account = web3.eth.accounts.privateKeyToAccount(privateKey);
         const address = account.address;
-        const CONTRACT_ADDRESS = "0x7968ac15a72629e05f41b8271e4e7292e0cc9f90";
+        // Updated CONTRACT_ADDRESS to match the 'to' address from the provided transaction data
+        const CONTRACT_ADDRESS = "0x9beaA0016c22B646Ac311Ab171270B0ECf23098F"; 
 
         // Check STT balance
         const balance = await web3.eth.getBalance(address);
@@ -98,28 +145,19 @@ async function mintPongPing(web3, privateKey, walletIndex, addLog, updatePanel) 
             value: '0x0',
             data: bytecodeMintPongPing(address),
             nonce: nonce,
-            gas: 200000,
+            gas: 2473724, // Fixed gas limit based on user provided data (0x25befc)
             gasPrice: gasPrice,
             chainId: await web3.eth.getChainId()
         };
 
-        // Estimate gas
-        try {
-            const gasEstimate = await web3.eth.estimateGas(tx);
-            addLog(`Info: Wallet ${walletIndex} │ Estimated gas: ${gasEstimate}`);
-            tx.gas = gasEstimate + 10000;
-        } catch (e) {
-            addLog(`✖ Error: Wallet ${walletIndex} │ Gas estimation failed: ${e.message}`);
-        }
-
-        // Sign and send
+        // Sign and send the transaction
         const signedTx = await web3.eth.accounts.signTransaction(tx, privateKey);
         const sentTx = await web3.eth.sendSignedTransaction(signedTx.rawTransaction);
 
         addLog(`✔ Success: Wallet ${walletIndex} │ Tx sent: ${SOMNIA_TESTNET_EXPLORER_URL}/tx/${sentTx.transactionHash}`);
         updatePanel(`✔ Wallet ${walletIndex}: Tx sent`);
 
-        // Wait for confirmation
+        // Wait for transaction confirmation
         if (sentTx.status) {
             addLog(`✔ Success: Wallet ${walletIndex} │ Minted 1000 $PONG successfully`);
             updatePanel(`✔ Wallet ${walletIndex}: Minted 1000 $PONG successfully`);
@@ -136,6 +174,13 @@ async function mintPongPing(web3, privateKey, walletIndex, addLog, updatePanel) 
     }
 }
 
+/**
+ * Main function to run the PongPing minting process.
+ * @param {function} updatePanel - Callback function to update the UI panel.
+ * @param {function} addLog - Callback function to add log messages.
+ * @param {function} closeUI - Callback function to close the UI (if applicable).
+ * @param {function} requestInput - Callback function to request user input (if applicable).
+ */
 module.exports = async function runMintPong(updatePanel, addLog, closeUI, requestInput) {
     try {
         updatePanel('\n START MINTING $PONG \n');
